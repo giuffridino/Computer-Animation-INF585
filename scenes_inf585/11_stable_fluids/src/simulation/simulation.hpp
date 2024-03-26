@@ -31,8 +31,20 @@ void diffuse(cgp::grid_2D<T>& new_field, cgp::grid_2D<T> const& field_reference,
 	//       	else
 	//		set_boundary_reflective(new_field);
 
-
-
+    for (int i = 0; i < 15; i++) 
+    {
+        for (int x = 1; x < new_field.dimension.x - 1; ++x) 
+        {
+            for (int y = 1; y < new_field.dimension.y - 1; ++y) 
+            {
+                new_field(x, y) = (field_reference(x, y) + mu * dt * (new_field(x - 1, y) + new_field(x + 1, y) + new_field(x, y - 1) + new_field(x, y + 1))) / (1 + 4 * mu * dt);
+            }
+        }
+        if (boundary == copy)
+            set_boundary(new_field);
+        else
+            set_boundary_reflective(new_field);
+    }
 }
 
 

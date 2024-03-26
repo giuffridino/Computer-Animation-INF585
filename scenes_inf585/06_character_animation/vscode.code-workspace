@@ -1,0 +1,114 @@
+// Configuration file for VSCode workspace to load the current path and the cgp library in the explorer
+// To use it: open your vscode workspace using this file
+{
+	"folders": [
+		{
+			"name": "Scene-06_character_animation",
+			"path": "."
+		},
+		{
+			"name": "cgp",
+			"path": "../../cgp/library/",
+		}
+	],
+
+	"extensions": {
+	"recommendations": ["twxs.cmake","raczzalan.webgl-glsl-editor"]
+	},
+
+	"launch": {
+		"configurations": [{
+			"type": "cppdbg",
+			"request": "launch",
+			"name": "C++ Run",
+			"program": "${workspaceFolder:Scene-06_character_animation}/build/06_character_animation",
+			"cwd": "${workspaceFolder:Scene-06_character_animation}",
+			"linux": {
+				"MIMode": "gdb"
+			},
+			"osx": {
+				"MIMode": "lldb"
+			},
+			"externalConsole": false, // common output on external console (default false)
+			"logging": {
+				"moduleLoad": false, // display all library load (default false)
+				"trace": true
+			}
+		}]
+	},
+	"settings": {
+		"files.associations": {
+			"algorithm": "cpp",
+			"iterator": "cpp",
+			"xhash": "cpp",
+			"xmemory": "cpp",
+			"xtree": "cpp",
+			"xutility": "cpp",
+			"iosfwd": "cpp",
+			"limits": "cpp",
+			"array": "cpp",
+			"atomic": "cpp",
+			"bit": "cpp",
+			"cctype": "cpp",
+			"charconv": "cpp",
+			"chrono": "cpp",
+			"clocale": "cpp",
+			"cmath": "cpp",
+			"compare": "cpp",
+			"concepts": "cpp",
+			"cstddef": "cpp",
+			"cstdint": "cpp",
+			"cstdio": "cpp",
+			"cstdlib": "cpp",
+			"cstring": "cpp",
+			"ctime": "cpp",
+			"cwchar": "cpp",
+			"exception": "cpp",
+			"format": "cpp",
+			"forward_list": "cpp",
+			"fstream": "cpp",
+			"functional": "cpp",
+			"initializer_list": "cpp",
+			"iomanip": "cpp",
+			"ios": "cpp",
+			"iostream": "cpp",
+			"istream": "cpp",
+			"list": "cpp",
+			"locale": "cpp",
+			"map": "cpp",
+			"memory": "cpp",
+			"mutex": "cpp",
+			"new": "cpp",
+			"optional": "cpp",
+			"ostream": "cpp",
+			"random": "cpp",
+			"ratio": "cpp",
+			"set": "cpp",
+			"sstream": "cpp",
+			"stdexcept": "cpp",
+			"stop_token": "cpp",
+			"streambuf": "cpp",
+			"string": "cpp",
+			"system_error": "cpp",
+			"thread": "cpp",
+			"tuple": "cpp",
+			"type_traits": "cpp",
+			"typeinfo": "cpp",
+			"unordered_map": "cpp",
+			"utility": "cpp",
+			"vector": "cpp",
+			"xfacet": "cpp",
+			"xiosbase": "cpp",
+			"xlocale": "cpp",
+			"xlocbuf": "cpp",
+			"xlocinfo": "cpp",
+			"xlocmes": "cpp",
+			"xlocmon": "cpp",
+			"xlocnum": "cpp",
+			"xloctime": "cpp",
+			"xstring": "cpp",
+			"xtr1common": "cpp"
+		}
+	}
+
+}

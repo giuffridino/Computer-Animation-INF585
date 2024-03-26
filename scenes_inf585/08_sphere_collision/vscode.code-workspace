@@ -35,6 +35,11 @@
 				"trace": true
 			}
 		}]
-	  }
+	},
+	"settings": {
+		"files.associations": {
+			"random": "cpp"
+		}
+	}
 
 }

@@ -13,5 +13,11 @@ struct particle_structure
     float m;     // mass
 };
 
-void simulate(std::vector<particle_structure>& particles, float dt);
+struct wall_bounds
+{
+    cgp::vec3 a;
+    cgp::vec3 n;
+};
+
+void simulate(std::vector<particle_structure>& particles, float dt_argument, std::vector<wall_bounds> const& walls);
 

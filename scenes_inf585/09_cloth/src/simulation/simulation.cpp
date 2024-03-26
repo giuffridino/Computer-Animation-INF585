@@ -2,8 +2,17 @@
 
 using namespace cgp;
 
+vec3 spring_force(vec3 pi, vec3 pj, float K, float L0)
+{
+    vec3 const u = normalize(pi - pj);
+    float const L = norm(pi - pj);
+    return -K * (L - L0) * u;
+}
 
-
+float compute_triangle_area(vec3 p1, vec3 p2, vec3 p3)
+{
+    return 0.5 * norm(cross(p2 - p1, p3 - p1));
+}
 
 // Fill value of force applied on each particle
 // - Gravity
@@ -58,6 +67,60 @@ void simulation_compute_force(cloth_structure& cloth, simulation_parameters cons
             //   - You may want to loop over all the neighbors of a vertex to add each contributing force to this vertex
             //   - To void repetitions and limit the need of debuging, it may be a good idea to define a generic function that computes the spring force between two positions given the parameters K and L0
             //   - If the simulation is a bit too slow, you can speed it up in adapting the parameter N_step in scene.cpp that loops over several simulation step between two displays.
+            
+            // cgp:numarray<cgp::vec3> neighbors_positions;
+            // Loop over the structural neighbors
+            if (ku + 1 < N) {
+                force(ku, kv) += spring_force(position(ku, kv), position(ku + 1, kv), K, L0);
+                // neighbors_positions.push_back(position(ku + 1, kv));
+            }
+            if (ku - 1 >= 0) {
+                force(ku, kv) += spring_force(position(ku, kv), position(ku - 1, kv), K, L0);
+                // neighbors_positions.push_back(position(ku - 1, kv));
+            }
+            if (kv + 1 < N) {
+                force(ku, kv) += spring_force(position(ku, kv), position(ku, kv + 1), K, L0);
+                // neighbors_positions.push_back(position(ku, kv + 1));
+            }
+            if (kv - 1 >= 0) {
+                force(ku, kv) += spring_force(position(ku, kv), position(ku, kv - 1), K, L0);
+                // neighbors_positions.push_back(position(ku, kv - 1));
+            }
+
+            // Loop over the shear neighbors
+            if (ku + 1 < N && kv + 1 < N) {
+                force(ku, kv) += spring_force(position(ku, kv), position(ku + 1, kv + 1), K, L0 * sqrt(2));
+                // neighbors_positions.push_back(position(ku + 1, kv + 1));
+            }
+            if (ku - 1 >= 0 && kv - 1 >= 0) {
+                force(ku, kv) += spring_force(position(ku, kv), position(ku - 1, kv - 1), K, L0 * sqrt(2));
+                // neighbors_positions.push_back(position(ku - 1, kv - 1));
+            }
+            if (ku + 1 < N && kv - 1 >= 0) {
+                force(ku, kv) += spring_force(position(ku, kv), position(ku + 1, kv - 1), K, L0 * sqrt(2));
+                // neighbors_positions.push_back(position(ku + 1, kv - 1));
+            }
+            if (ku - 1 >= 0 && kv + 1 < N) {
+                force(ku, kv) += spring_force(position(ku, kv), position(ku - 1, kv + 1), K, L0 * sqrt(2));
+                // neighbors_positions.push_back(position(ku - 1, kv + 1));
+            }
+
+            // Loop over the bending neighbors
+            if (ku + 2 < N) {
+                force(ku, kv) += spring_force(position(ku, kv), position(ku + 2, kv), K, 2 * L0);
+            }
+            if (ku - 2 >= 0) {
+                force(ku, kv) += spring_force(position(ku, kv), position(ku - 2, kv), K, 2 * L0);
+            }
+            if (kv + 2 < N) {
+                force(ku, kv) += spring_force(position(ku, kv), position(ku, kv + 2), K, 2 * L0);
+            }
+            if (kv - 2 >= 0) {
+                force(ku, kv) += spring_force(position(ku, kv), position(ku, kv - 2), K, 2 * L0);
+            }
+
+            // Add wind force
+            force(ku, kv) += L0 * L0 * dot(normal(ku, kv), parameters.wind.direction) * normal(ku, kv) * parameters.wind.magnitude; // Maybe add magnitude
         }
     }
 
@@ -95,6 +158,26 @@ void simulation_apply_constraints(cloth_structure& cloth, constraint_structure c
     // For all vertex:
     //   If vertex is below floor level ...
     //   If vertex is inside collision sphere ...
+
+    size_t const N = cloth.N_samples();  
+    grid_2D<vec3> const& position = cloth.position;
+    float displ = 0.01f;
+
+    for (int ku = 0; ku < N; ++ku) 
+    {
+        for (int kv = 0; kv < N; ++kv) 
+        {
+            if (position(ku, kv).z < constraint.ground_z) 
+            {
+                cloth.position(ku, kv).z = constraint.ground_z + 1e-3;
+            }
+            if (norm(position(ku, kv) - constraint.sphere.center) <= constraint.sphere.radius + displ) 
+            {
+                vec3 n = normalize(position(ku, kv) - constraint.sphere.center);
+                cloth.position(ku, kv) = constraint.sphere.center + (constraint.sphere.radius + displ) * n;
+            }
+        }
+    }
 }
 
 

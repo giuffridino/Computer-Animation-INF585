@@ -30,6 +30,9 @@ namespace cgp
     quaternion operator-(quaternion const& a, quaternion const& b);
 
     quaternion normalize(quaternion const& q);
+    quaternion negate(quaternion const& q);
+    quaternion slerp(quaternion const& q1, quaternion const& q2, float t);
+    quaternion lerp(quaternion const& q1, quaternion const& q2, float t);
 
 	std::istream& operator>>(std::istream& stream, quaternion& data);
 }

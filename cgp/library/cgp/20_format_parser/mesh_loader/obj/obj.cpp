@@ -130,7 +130,6 @@ mesh mesh_load_file_obj(const std::string& filename, numarray<numarray<int> >& v
     mesh m;
     std::map<int3, int, comparator_int3> connectivity_map;
     std::tie(m,connectivity_map) = make_unique_parameter_per_value(positions, texture_uv, normals, faces, type);
-
     // Retrieve correspondance between initial vertices in files and new ones
     vertex_correspondance.resize(positions.size());
     for(auto const& it : connectivity_map)
@@ -140,7 +139,6 @@ mesh mesh_load_file_obj(const std::string& filename, numarray<numarray<int> >& v
 
         vertex_correspondance[vertex_in].push_back(vertex_out);
     }
-
     return m;
 }
 

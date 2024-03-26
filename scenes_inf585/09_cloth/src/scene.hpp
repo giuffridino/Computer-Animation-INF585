@@ -41,6 +41,7 @@ struct scene_structure : scene_inputs_generic {
 	cgp::mesh_drawable obstacle_floor;
 	cgp::mesh_drawable obstacle_sphere;
 	cgp::mesh_drawable sphere_fixed_position;
+	cgp::mesh_drawable falling_sphere;
 
 	// Cloth related structures
 	cloth_structure cloth;                     // The values of the position, velocity, forces, etc, stored as a 2D grid

@@ -96,6 +96,51 @@ namespace cgp
     {
         return q/norm(q);
     }
+    quaternion negate(quaternion const& q)
+    {
+        return {-q.x, -q.y, -q.z, -q.w};
+    }
+    quaternion slerp(quaternion const& q1, quaternion const& q2, float t)
+    {
+        quaternion quat1 = normalize(q1);
+        quaternion quat2 = normalize(q2);
+
+        float dotProduct = quat1.x * quat2.x + quat1.y * quat2.y + quat1.z * quat2.z + quat1.w * quat2.w;
+        dotProduct = std::fmax(-1.0f, std::fmin(1.0f, dotProduct));
+        if (std::abs(dotProduct - 1.0f) < std::numeric_limits<float>::epsilon())
+        {
+            return quat1;
+        }
+
+        if (dotProduct < 0.0f)
+        {
+            quat2 = negate(quat2);
+            dotProduct = -dotProduct;
+        }
+        dotProduct = std::fmax(-1.0f, std::fmin(1.0f, dotProduct));
+        float theta = std::acos(dotProduct);
+        float sinTheta = std::sin(theta);
+        if (std::abs(sinTheta) < std::numeric_limits<float>::epsilon())
+        {
+            return quat1;
+        }
+
+        float weight1 = std::sin((1.0f - t) * theta) / sinTheta;
+        float weight2 = std::sin(t * theta) / sinTheta;
+
+        quaternion result;
+        result.x = weight1 * quat1.x + weight2 * quat2.x;
+        result.y = weight1 * quat1.y + weight2 * quat2.y;
+        result.z = weight1 * quat1.z + weight2 * quat2.z;
+        result.w = weight1 * quat1.w + weight2 * quat2.w;
+        // std::cout << "result:" << result << "\n";
+        return normalize(result);
+    }
+    quaternion lerp(const quaternion& q1, const quaternion& q2, float t)
+    {
+        t = std::fmax(0.0f, std::fmin(1.0f, t));
+        return normalize((1 - t) * q1 + t * q2);
+    }
 
     std::istream& operator>>(std::istream& stream, quaternion& data)
     {

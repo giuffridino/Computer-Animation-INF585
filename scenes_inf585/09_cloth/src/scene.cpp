@@ -27,6 +27,11 @@ void scene_structure::initialize()
 	sphere_fixed_position.model.scaling = 0.02f;
 	sphere_fixed_position.material.color = { 0,0,1 };
 
+	falling_sphere.initialize_data_on_gpu(mesh_primitive_sphere());
+	falling_sphere.model.scaling = 0.1f;
+	falling_sphere.material.color = { 1, 0, 0 };
+	falling_sphere.model.translation = {0, 0.5, 1.3};
+
 	cloth_texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/cloth.jpg");
 	initialize_cloth(gui.N_sample_edge);
 }
@@ -42,6 +47,8 @@ void scene_structure::initialize_cloth(int N_sample)
 	constraint.fixed_sample.clear();
 	constraint.add_fixed_position(0, 0, cloth);
 	constraint.add_fixed_position(0, N_sample - 1, cloth);
+	constraint.add_fixed_position(N_sample - 1, 0, cloth);
+	constraint.add_fixed_position(N_sample - 1, N_sample - 1, cloth);
 }
 
 
@@ -64,6 +71,7 @@ void scene_structure::display_frame()
 		sphere_fixed_position.model.translation = c.second.position;
 		draw(sphere_fixed_position, environment);
 	}
+	draw(falling_sphere, environment);
 
 	
 	// Simulation of the cloth

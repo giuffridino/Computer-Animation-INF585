@@ -75,6 +75,19 @@ void simulation_step(std::vector<shape_deformable_structure>& deformables, simul
 	
 }
 
+mat3 compute_best_rotation(shape_deformable_structure const& deformable)
+{
+    int N_vertex = deformable.size();
+    mat3 M = mat3::build_zero();
+    for(int k=0; k<N_vertex; ++k)
+    {
+        vec3 r = deformable.position_predict[k] - deformable.com;
+        vec3 r0 = deformable.position_reference[k] - deformable.com_reference;
+
+        M += tensor_product(r,r0);
+    }
+    return polar_decomposition(M);
+}
 
 // Compute the shape matching on all the deformable shapes
 void shape_matching(std::vector<shape_deformable_structure>& deformables, simulation_parameter const& param)
@@ -108,8 +121,31 @@ void shape_matching(std::vector<shape_deformable_structure>& deformables, simula
     //  - The center of mass of the predicted position can be computed as "average(deformable.position_predicted)"
     //  - A matrix mat3 can be initialized to zeros with the syntax "mat3 M = mat3::build_zero();"
     //  - The product a * b^tr, where (a,b) are vec3 is also called a tensor product. It can be computed using the syntax "mat3 M = tensor_product(a,b)"
-    //
 
+    for (int i = 0; i < deformables.size(); i++) 
+    {
+        deformables[i].com = average(deformables[i].position_predict);
+        mat3 R = compute_best_rotation(deformables[i]);
+
+        for(int k=0; k<deformables[i].size(); ++k){
+            vec3 r = deformables[i].position_predict[k]-deformables[i].com;
+            vec3 r0 = deformables[i].position_reference[k]-deformables[i].com_reference;
+
+            float deformation_threshold = 0.001f;
+            float deformation = norm(r-R*r0);
+            if(deformation>deformation_threshold) {
+                deformables[i].position_reference[k] = param.plasticity*transpose(R)*r+(1-param.plasticity)*r0 + deformables[i].com_reference;
+            }
+        }
+        deformables[i].com_reference = average(deformables[i].position_reference);
+
+        R = compute_best_rotation(deformables[i]);
+        for (int j = 0; j < deformables[i].position_predict.size(); j++) 
+        {
+
+            deformables[i].position_predict[j] = (1 - param.elasticity) * (R * (deformables[i].position_reference[j] - deformables[i].com_reference) + deformables[i].com) + param.elasticity * deformables[i].position_predict[j];
+        }
+    }
 }
 
 
@@ -142,7 +178,30 @@ void collision_between_particles(std::vector<shape_deformable_structure>& deform
     //    - For all the vertices(/particles) of the shapes (p_i,p_j)
     //      - If ||p_i-p_j|| < 2 r // collision state
     //           Then modify (p_i,p_j) to remove the collision state
-
+    for (int d_i = 0; d_i < N_deformable; d_i++)
+    {
+        for (int d_j = 0; d_j < N_deformable; d_j++)
+        {
+            for (int p_i = 0; p_i < deformables[d_i].position_predict.size(); p_i++)
+            {
+                for (int p_j = 0; p_j < deformables[d_j].position_predict.size(); p_j++)
+                {
+                    if (d_i != d_j)
+                    {
+                        // if (bounding_box::collide(bbox[d_i], bbox[d_j]))
+                        if (norm(deformables[d_i].position_predict[p_i] - deformables[d_j].position_predict[p_j]) < 2 * r)
+                        {
+                            vec3 n = normalize(deformables[d_i].position_predict[p_i] - deformables[d_j].position_predict[p_j]);
+                            // bbox[d_i].extends(r * n);
+                            // bbox[d_j].extends(-r * n);
+                            deformables[d_i].position_predict[p_i] += r * n;
+                            deformables[d_j].position_predict[p_j] -= r * n;
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 

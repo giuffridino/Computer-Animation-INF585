@@ -23,6 +23,12 @@ void scene_structure::initialize()
 		{-1,-1,-1},{-1,-1,1}, {1,-1,-1},{1,-1,1}, {1,1,-1},{1,1,1},   {-1,1,-1},{-1,1,1} };
 	cube_wireframe.initialize_data_on_gpu(cube_wireframe_data);
 
+	walls.push_back({ {0, 0, -1}, {0, 0, 1} });
+	walls.push_back({ {0, 0, 1}, {0, 0, -1} });
+	walls.push_back({ {0, -1, 0}, {0, 1, 0} });
+	walls.push_back({ {0, 1, 0}, {0, -1, 0} });
+	walls.push_back({ {1, 0, 0}, {-1, 0, 0} });
+	walls.push_back({ {-1, 0, 0}, {1, 0, 0} });
 	sphere.initialize_data_on_gpu(mesh_primitive_sphere());
 }
 
@@ -43,7 +49,7 @@ void scene_structure::display_frame()
 
 	// Call the simulation of the particle system
 	float const dt = 0.01f * timer.scale;
-	simulate(particles, dt);
+	simulate(particles, dt, walls);
 
 	// Display the result
 	sphere_display();

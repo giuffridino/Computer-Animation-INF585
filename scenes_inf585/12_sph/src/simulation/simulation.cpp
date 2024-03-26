@@ -12,14 +12,16 @@ float W_laplacian_viscosity(vec3 const& p_i, vec3 const& p_j, float h)
 {
     // To do ...
     //  Fill it with laplacian of W_viscosity
-    return 0.0f;
+    return (45 / (3.14 * pow(h,6))) * (h - norm(p_i - p_j));
+    // return 0.0f;
 }
 
 vec3 W_gradient_pressure(vec3 const& p_i, vec3 const& p_j, float h)
 {
     // To do ...
     //  Fill it with gradient of W_spiky
-    return (p_i-p_j)/norm(p_i-p_j);
+    return -(45 / (3.14 * pow(h,6))) * (h - norm(p_i - p_j)) * (h - norm(p_i - p_j)) * (p_i-p_j)/norm(p_i-p_j);
+    // return (p_i-p_j)/norm(p_i-p_j);
 }
 
 float W_density(vec3 const& p_i, const vec3& p_j, float h)
@@ -36,9 +38,16 @@ void update_density(numarray<particle_element>& particles, float h, float m)
     //  rho_i = \sum_j m W_density(pi,pj)
     int const N = particles.size();
     for(int i=0; i<N; ++i)
-        particles[i].rho = 1.0f; // to be modified
-
-
+    {
+        particles[i].rho = 0.0f;
+        for (int j=0; j<N; ++j)
+        {
+            if (norm(particles[i].p - particles[j].p) <= h)
+                particles[i].rho += m * W_density(particles[i].p, particles[j].p, h);
+                // continue;
+        }
+        // particles[i].rho = 1.0f; // to be modified
+    }
 }
 
 // Convert the particle density to pressure
@@ -63,7 +72,24 @@ void update_force(numarray<particle_element>& particles, float h, float m, float
     //   Compute F_viscosity
     //   particles[i].f += (F_pressure + F_viscosity)
     // ...
-
+    // for (int k = 0; k < 20; k++)
+    // {
+    // }
+    
+    for (int i = 0; i < N; i++)
+    {
+        cgp::vec3 f_pressure = {0,0,0};
+        cgp::vec3 f_viscosity = {0,0,0};
+        for (int j = 0; j < N; j++)
+        {
+            if (i != j && norm(particles[i].p - particles[j].p) <= h)
+            {
+                f_pressure += m * ((particles[i].pressure + particles[j].pressure) / (2 * particles[j].rho)) * W_gradient_pressure(particles[i].p, particles[j].p, h);
+                f_viscosity += m * ((particles[j].v - particles[i].v) / particles[j].rho) * W_laplacian_viscosity(particles[i].p, particles[j].p, h);
+            }
+        }
+        particles[i].f += -f_pressure * m / particles[i].rho + m * nu * f_viscosity;
+    }
 }
 
 void simulate(float dt, numarray<particle_element>& particles, sph_parameters_structure const& sph_parameters)

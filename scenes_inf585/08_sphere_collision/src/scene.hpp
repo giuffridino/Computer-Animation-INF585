@@ -37,6 +37,7 @@ struct scene_structure : scene_inputs_generic {
 	cgp::mesh_drawable sphere;
 	cgp::curve_drawable cube_wireframe;
 
+	std::vector<wall_bounds> walls;
 
 	// ****************************** //
 	// Functions
